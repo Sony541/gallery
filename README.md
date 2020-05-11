@@ -1,2 +1,2 @@
-# init
+# Gallery
 Initial project
