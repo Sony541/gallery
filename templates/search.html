@@ -1,0 +1,10 @@
+{% extends "with_search.html" %}
+
+{% block content %}
+  Найдено фото: <b> {{ len.search }} </b> <br>
+  {% for photo in cache.search %} 
+  <div class="searchview">
+    <a href="{{  url_for('view', photo=photo) }}"> <img class="searchview" src="{{url_for('photo', photo_id=photo)}}" alt="{{photo}}"/> </a>
+  </div>
+  {% endfor %}
+{% endblock %}

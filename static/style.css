@@ -1,0 +1,103 @@
+body {
+  font-family: tahoma;
+}
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  color: #FF3300;
+}
+
+table.main{
+  height: 100%;
+  width: 100%;
+}
+
+table.main td{
+  vertical-align: top;
+}
+table.main td.menu{
+  width: 20%;
+}
+
+div.view {
+  height: 100%;
+  position: relative;  
+}
+
+div.searchview { 
+  height: 200px;  
+  min-width: 200px;  
+  display: inline-block;
+}
+
+img.searchview { 
+  height: 200px;  
+}
+
+img.view {
+  max-width: 100%;
+  max-height: 100%;
+  position: absolute;
+}
+
+input.tag {
+  display: none;
+}
+
+label.tag {
+  cursor: pointer;
+  border-radius: 15px;
+  background-color: #dddddd;
+  display: inline-block;
+  padding: 7px 12px 7px 12px;
+  margin: 3px;
+}
+
+label.tag:hover{
+  background-color: #eeeeee;
+}
+
+input.tag:checked + label{
+  background-color: #c0dEb0;
+}
+
+input.tag_button {
+  font-size: 16pt;
+  background-color: #dddddd;
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+}
+input.tag_button:hover {
+  background-color: #eeeeee;
+}
+
+
+
+
+
+
+.drag {
+  width: 200px;
+  height: 200px;
+  background: blue;
+  display: inline-block;
+  margin-right: 10px;
+}
+#boxB{
+  margin-right: 0px;
+}
+#big {
+  width: 415px;
+  height: 400px;
+  background: red;
+  margin: 20px auto;
+}
+section {
+width: 415px;
+  height: 200px;
+  background:gray;
+  margin: 20px auto;
+}

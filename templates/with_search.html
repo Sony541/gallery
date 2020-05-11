@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}{% endblock %}
+
+{% block tagform %}
+  <form name="form_search" id="form_search" method="post" action="{{url_for('search')}}">
+    <div id="tags">
+      {% for tag, value in cache.tags|dictsort(false, 'value', reverse = True) %}
+      <input class="tag" id="{{ tag }}" type="checkbox" name="{{ tag }}">
+      <label class="tag" for="{{ tag }}">{{ tag }} {{ cache.tags[tag] }}</label>
+      {% endfor %}
+    </div>
+    <hr>
+    <input class="tag_button" type="submit" value="Найти!">
+  </form>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "with_search.html" %}
+
+{% block content %}
+
+<script>
+function dragStart(ev) {
+   ev.dataTransfer.effectAllowed='move';
+   ev.dataTransfer.setData("Text", ev.target.getAttribute('id'));
+   ev.dataTransfer.setDragImage(ev.target,100,100);
+   return true;
+}
+function dragEnter(ev) {
+   event.preventDefault();
+   return true;
+}
+function dragOver(ev) {
+     event.preventDefault();
+}
+function dragDrop(ev) {
+   var data = ev.dataTransfer.getData("Text");
+   ev.target.appendChild(document.getElementById(data));
+   ev.stopPropagation();
+   return false;
+}
+</script>
+<h1>Drag the blue boxes into the red box and back</h1>
+<div id="big" ondragenter="return dragEnter(event)"
+     ondrop="return dragDrop(event)" 
+     ondragover="return dragOver(event)"></div>
+<section id="section"  ondragenter="return dragEnter(event)" 
+     ondrop="return dragDrop(event)" 
+     ondragover="return dragOver(event)">
+<div class="drag" id="boxA" draggable="true" ondragstart="return dragStart(event)"></div>
+<div class="drag" id="boxB" draggable="true" ondragstart="return dragStart(event)"></div>
+</section>
+
+{% endblock %}
