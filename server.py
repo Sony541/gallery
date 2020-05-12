@@ -1,3 +1,4 @@
+# coding=utf-8
 from flask import Flask, render_template, request, send_from_directory, send_file
 import os, json, zipfile, datetime, time, io
 location = os.path.expanduser("D:\\Фотографии\\")
