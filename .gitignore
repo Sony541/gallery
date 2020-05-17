@@ -3,3 +3,6 @@ __pycache__
 backup_data.json
 data.json
 *.pyc
+test_storage*
+test_data*
+.DS_Store

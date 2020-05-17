@@ -8,3 +8,5 @@ prod = {
     "location": "D:\\Фотографии\\",
     "data_file": "data.json"
 }
+
+active_config = test

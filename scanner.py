@@ -1,34 +1,49 @@
-import os, json, config
-from hashlib import md5
+# coding=utf-8
+import os, json
+import db_update
 
-conf = config.test
-LOCATION = os.path.expanduser(conf['location'])
+from config import active_config
+
+LOCATION = os.path.expanduser(active_config['location'])
 
 
 class Cache(object):
     def __init__(self):
-        self.memory = {'new': {},
-                       'old': {},
-                       'to_delete': {},
-                       'search': {},
-                       'tags': {},
-                       'active_tags': {}}
+        self.memory = {}
 
-    def _name_in_new(self, name):
-        for hash in self.memory["new"]:
-            if name in self.memory["new"][hash]["names"]:
-                return hash
-        return False
+    def _clear(self):
+        if self.memory:
+            self.memory = {}
+
 
     def _read_json(self):
-        try:
-            f = open(conf['data_file'], 'r')
-            self.memory["old"] = json.loads(f.read())
-            f.close()
+        js = db_update.get_old()
+        if js:
+            self.memory['old'] = js
             return True
-        except:
-            print("No file")
+        else:
             return False
+
+
+    def _get_file_meta(self, fname):
+        stat = os.stat(fname)
+        return {
+            'st_size': stat.st_size,
+            'st_mtime': str(stat.st_mtime),
+            'tags': []
+        }
+
+
+    def _find_files_on_disk(self):
+        wlk = os.walk(LOCATION)
+        list_of_files = [os.path.join(dp, f) for dp, dn, fn in wlk for f in fn]
+        if list_of_files:
+            self.memory['new'] = {}
+            for name in list_of_files:
+                id = name[len(LOCATION):]
+                meta = self._get_file_meta(name)
+                self.memory['new'][id] = meta
+
 
     def _find_tags(self):
         self.memory["tags"] = {}
@@ -40,48 +55,61 @@ class Cache(object):
                     else:
                         self.memory["tags"][tag] = 1
 
-    def _find_files_on_disk(self):
-        wlk = os.walk(LOCATION)
-        list_of_files = [os.path.join(dp, f)[len(LOCATION):] for dp, dn, fn in wlk for f in fn]
-        for name in list_of_files:
-            hash = size_and_hash(LOCATION + name)
-            if hash in self.memory['new']:
-                self.memory['new'][hash]["names"].append(name)
-                self.memory['new'][hash]["type"] = "duplicate"
+
+    def _find_files_in_db(self):
+        old = db_update.get_old()
+        if old:
+            self.memory['old'] = old
+            return True
+
+
+    def _find_changed_moved_to_delete(self):
+        old = set(self.memory['old'].keys())
+        new = set(self.memory['new'].keys())
+
+        lost = list(old - new)
+        added = new - old
+        checked = new & old
+
+        moved = []
+        for name in [x for x in lost]:
+            dup = self._find_same_meta_in_new(name)
+            if dup:
+                moved.append((name, dup))
+                lost.remove(name)
+        if moved:
+            self.memory['moved'] = moved
+        if lost:
+            self.memory['to_delete'] = lost
+
+        changed = []
+        for name in checked:
+            if not self._same_meta(self.memory['old'][name], self.memory['new'][name]):
+                changed.append(name)
             else:
-                self.memory['new'][hash] = {"type": "new", "names": [name]}
-
-    def _find_files_in_json(self):
-        if not self._read_json():
-            return None
-        for hash in self.memory["old"]:
-            if hash not in self.memory["new"]:
-                found_in_new = self._name_in_new(self.memory["old"][hash]["name"])
-                if found_in_new:
-                    self.memory["new"][found_in_new]["type"] = "modified"
-                    self.memory["new"][found_in_new]["modified_hash"] = hash
-                    self.memory["new"][found_in_new]["modified_name"] = self.memory["old"][hash]["name"]
-                else:
-                    self.memory["to_delete"][hash] = self.memory["old"][hash]
-            else:
-                if self.memory["old"][hash]["name"] not in self.memory["new"][hash]["names"]:
-                    self.memory["new"][hash]["type"] = "moved"
-                    self.memory["new"][hash]["moved_from"] = self.memory["old"][hash]["name"]
-                else:
-                    if len(self.memory["new"][hash]["names"]) != 1:
-                        self.memory["new"][hash]["type"] = "duplicate"
-                    else:
-                        del(self.memory["new"][hash])
-
-    def _clear(self):
-        for key in self.memory:
-            self.memory[key] = {}
+                del self.memory['new'][name]
+        if changed:
+            self.memory['changed'] = changed
 
 
-    def dump(self):
-        f = open('data.json', 'w')
-        f.write(json.dumps(self.memory["old"], ensure_ascii=False, indent=2))
-        f.close()
+
+
+    def _same_meta(self, ob1, ob2):
+        return ob1['st_size'] == ob2['st_size'] and ob1['st_mtime'] == ob2['st_mtime']
+
+
+    def _find_same_meta_in_new(self, fname):
+        st_size, st_mtime = self.memory['old'][fname]['st_size'], self.memory['old'][fname]['st_mtime']
+        for name in self.memory['new']:
+            print("names: %s - %s,\n new: %s,\n old: %s" % (fname, name, self.memory['old'][fname], self.memory['new'][name]))
+            if st_size == self.memory['new'][name]['st_size'] and st_mtime == self.memory['new'][name]['st_mtime']:
+                print("MATCH")
+                return name
+
+
+    def dump(self, name=None):
+        db_update.write(self.memory['new'], name)
+
 
     def len(self):
         r = {}
@@ -90,55 +118,11 @@ class Cache(object):
         return r
 
     def scan(self):
-        if self.memory:
-            self._clear()
+        self._clear()
         self._find_files_on_disk()
-        self._find_files_in_json()
-
-    def show(self):
-        microcache = {}
-        for hash in self.memory["new"]:
-            type = self.memory["new"][hash]["type"]
-            if not type in microcache:
-                microcache[type] = {}
-            microcache[type][hash] = self.memory["new"][hash]
-        if "new" in microcache:
-            print("New files:")
-            for hash in microcache["new"]:
-                print ("  %s : %s" % (hash, microcache["new"][hash]["names"][0]))
-        if "duplicate" in microcache:
-            print("Duplicate files:")
-            for hash in microcache["duplicate"]:
-                print ("  %s" % hash)
-                for name in microcache["duplicate"][hash]["names"]:
-                    print ("    %s" % name)
-        if "moved" in microcache:
-            print("Moved files:")
-            for hash in microcache["moved"]:
-                print ("  %s moved from %s to one of places:" % (hash, microcache["moved"][hash]["moved_from"]))
-                for name in microcache["moved"][hash]["names"]:
-                    print ("    %s" % name)
-        if "modified" in microcache:
-            print("Modified files:")
-            for hash in microcache["modified"]:
-                print ("  %s modified from %s to %s:" % (microcache["modified"][hash]["modified_name"],
-                                                         microcache["modified"][hash]["modified_hash"], hash))
-                if len(microcache["modified"][hash]["names"]) != 1:
-                    print("    it also now have duplicates:")
-                    for name in microcache["modified"][hash]["names"]:
-                        if name != microcache["modified"][hash]["modified_name"]:
-                            print ("    %s" % name)
-
-
-def size_and_hash(fname):
-    hash_md5 = md5()
-    size = 0
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-            size += len(chunk)
-    return "%s_%s" % (size, hash_md5.hexdigest())
-
+        if self._find_files_in_db():
+            self._find_changed_moved_to_delete()
+        print (json.dumps(self.memory, indent=2))
 
 
 def search_tags(pattern, tag_list):
@@ -149,4 +133,5 @@ def search_tags(pattern, tag_list):
 
 
 cache = Cache()
+
 cache.scan()
