@@ -15,6 +15,16 @@ class Cache(object):
         if self.memory:
             self.memory = {}
 
+    def _get_extensinons(self):
+        try:
+            f = open('file_extenstions.json')
+            ext = json.loads(f.read())
+            f.close()
+            return ext
+        except Exception as e:
+            print ('Error getting extens: %s' % e)
+            return None
+
 
     def _read_json(self):
         js = db_update.get_old()
@@ -35,8 +45,23 @@ class Cache(object):
 
 
     def _find_files_on_disk(self):
+        ext = self._get_extensinons()
         wlk = os.walk(LOCATION)
         list_of_files = [os.path.join(dp, f) for dp, dn, fn in wlk for f in fn]
+        if ext:
+            print("MATCH")
+            ignore = []
+            for x in [x for x in list_of_files]:
+                fnd = x.rfind('.')
+                if fnd != -1:
+                    e = x[fnd+1:].lower()
+                    if e in ext:
+                        continue
+                list_of_files.remove(x)
+                ignore.append(x)
+            if ignore:
+                self.memory['ignore'] = ignore
+
         if list_of_files:
             self.memory['new'] = {}
             for name in list_of_files:
