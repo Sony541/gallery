@@ -1,87 +1,30 @@
 # coding=utf-8
 from flask import Flask, render_template, request, send_from_directory, send_file
 import os, json, zipfile, datetime, time, io
-location = os.path.expanduser("D:\\Фотографии\\")
-
-class Cache(object):
-    def __init__(self):
-        self.new =          {}
-        self.old =          {}
-        self.to_delete =    {}
-        self.to_view =      {}
-        self.search =       {}
-        self.tags =         {}
-        self.active_tags =  []
-
-    def clear(self):
-        self.new =          {}
-        self.old =          {}
-        self.to_delete =    {}
-        self.to_view =      {}
-        self.search =       {}
-        self.tags =         {}
-        self.active_tags =  []
-
-    def fill(self):
-        try:
-            f = open('data.json', 'r')
-            self.old = json.loads(f.read())
-            f.close()
-            self.tags = {}
-            for key in self.old:
-                if self.old[key]:
-                    for tag in self.old[key]:
-                        if tag in self.tags:
-                            self.tags[tag] += 1
-                        else:
-                            self.tags[tag] = 1
-        except:
-            print("No file")
-
-    def dump(self):
-        f = open('data.json', 'w')
-        f.write(json.dumps(self.old, ensure_ascii=False, indent=2))
-        f.close()
-
-    def len(self):
-        return {
-            "new"       : len(self.new),
-            "old"       : len(self.old),
-            "to_delete" : len(self.to_delete),
-            "to_view"   : len(self.to_view),
-            "search"    : len(self.search)
-        }
-
-def search_tags(pattern, taglist):
-    for tag in pattern:
-        if not (tag in taglist):
-            return False
-    return True
-
-def scan():
-    cache.clear()
-    wlk = os.walk(location)
-    a = [os.path.join(dp, f)[len(location):] for dp, dn, fn in wlk for f in fn]
-    for row in a:
-        cache.new[row] = None
-    cache.fill()
-
-    for row in cache.old:
-        if row in cache.new:
-            del cache.new[row]
-            if cache.old[row] is None:
-                cache.to_view[row] = None
-        else:
-            cache.to_delete[row] = cache.old[row]
+from scanner import Cache
+from config import active_config
 
 cache = Cache()
-scan()
+cache.scan()
+
 app = Flask(__name__)
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html', title='Главная', cache=cache, len=cache.len())
+    return render_template('index.html', title='Главная', cache=cache.memory, len=cache.len())
+
+@app.route('/problems')
+def problems():
+    return render_template('problems.html', title='Разрешение конфликтов', cache=cache.memory, len=cache.len())
+
+
+@app.route('/problems_resolve', methods=['POST'])
+def problems_resolve():
+    f = request.form
+    cache.resolve_problems(f)
+    return render_template('problems_resolve.html', title='Разрешение конфликтов', cache=cache.memory, len=cache.len(), form=f)
+
 
 @app.route('/favicon.ico')
 def favicon():
@@ -159,7 +102,7 @@ def export():
 @app.route('/photo/<photo_id>')
 def photo(photo_id):
     print(photo_id)
-    return send_file(f"{location}\\{photo_id}")
+    return send_file("%s/%s" % (active_config['location'], photo_id))
 
 @app.route('/arch')
 def arch():

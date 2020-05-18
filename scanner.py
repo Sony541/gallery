@@ -15,12 +15,23 @@ class Cache(object):
         if self.memory:
             self.memory = {}
 
+    def _write_extensions(self, ext):
+        print(ext)
+        try:
+            f = open('file_extensions.json', 'w+')
+            f.write(json.dumps(sorted(ext)))
+            f.close()
+        except Exception as e:
+            print ('Error writing extens: %s' % e)
+            return None
+
     def _get_extensinons(self):
         try:
-            f = open('file_extenstions.json')
+            f = open('file_extensions.json')
             ext = json.loads(f.read())
             f.close()
-            return ext
+            print("GOT EXTENSIONS")
+            return set(ext)
         except Exception as e:
             print ('Error getting extens: %s' % e)
             return None
@@ -45,22 +56,20 @@ class Cache(object):
 
 
     def _find_files_on_disk(self):
-        ext = self._get_extensinons()
+        ext = self._get_extensinons() or set()
         wlk = os.walk(LOCATION)
         list_of_files = [os.path.join(dp, f) for dp, dn, fn in wlk for f in fn]
-        if ext:
-            print("MATCH")
-            ignore = []
-            for x in [x for x in list_of_files]:
-                fnd = x.rfind('.')
-                if fnd != -1:
-                    e = x[fnd+1:].lower()
-                    if e in ext:
-                        continue
-                list_of_files.remove(x)
-                ignore.append(x)
-            if ignore:
-                self.memory['ignore'] = ignore
+        ignore = []
+        for x in [x for x in list_of_files]:
+            fnd = x.rfind('.')
+            if fnd != -1:
+                e = x[fnd+1:].lower()
+                if e in ext:
+                    continue
+            list_of_files.remove(x)
+            ignore.append(x[len(LOCATION):])
+        if ignore:
+            self.memory['ignore'] = ignore
 
         if list_of_files:
             self.memory['new'] = {}
@@ -89,34 +98,33 @@ class Cache(object):
 
 
     def _find_changed_moved_to_delete(self):
-        old = set(self.memory['old'].keys())
-        new = set(self.memory['new'].keys())
+        if 'old' in self.memory and 'new' in self.memory:
+            old = set(self.memory['old'].keys())
+            new = set(self.memory['new'].keys())
 
-        lost = list(old - new)
-        added = new - old
-        checked = new & old
+            lost = list(old - new)
+            added = new - old
+            checked = new & old
 
-        moved = []
-        for name in [x for x in lost]:
-            dup = self._find_same_meta_in_new(name)
-            if dup:
-                moved.append((name, dup))
-                lost.remove(name)
-        if moved:
-            self.memory['moved'] = moved
-        if lost:
-            self.memory['to_delete'] = lost
+            moved = []
+            for name in [x for x in lost]:
+                dup = self._find_same_meta_in_new(name)
+                if dup:
+                    moved.append((name, dup))
+                    lost.remove(name)
+            if moved:
+                self.memory['moved'] = moved
+            if lost:
+                self.memory['to_delete'] = lost
 
-        changed = []
-        for name in checked:
-            if not self._same_meta(self.memory['old'][name], self.memory['new'][name]):
-                changed.append(name)
-            else:
-                del self.memory['new'][name]
-        if changed:
-            self.memory['changed'] = changed
-
-
+            changed = []
+            for name in checked:
+                if not self._same_meta(self.memory['old'][name], self.memory['new'][name]):
+                    changed.append(name)
+                else:
+                    del self.memory['new'][name]
+            if changed:
+                self.memory['changed'] = changed
 
 
     def _same_meta(self, ob1, ob2):
@@ -126,9 +134,7 @@ class Cache(object):
     def _find_same_meta_in_new(self, fname):
         st_size, st_mtime = self.memory['old'][fname]['st_size'], self.memory['old'][fname]['st_mtime']
         for name in self.memory['new']:
-            print("names: %s - %s,\n new: %s,\n old: %s" % (fname, name, self.memory['old'][fname], self.memory['new'][name]))
             if st_size == self.memory['new'][name]['st_size'] and st_mtime == self.memory['new'][name]['st_mtime']:
-                print("MATCH")
                 return name
 
 
@@ -150,13 +156,45 @@ class Cache(object):
         print (json.dumps(self.memory, indent=2))
 
 
-def search_tags(pattern, tag_list):
-    for tag in pattern:
-        if not (tag in tag_list):
-            return False
-    return True
+    def search_tags(self, pattern, tag_list):
+        for tag in pattern:
+            if not (tag in tag_list):
+                return False
+        return True
 
 
-cache = Cache()
+    def resolve_problems(self, f):
+        d = {}
+        for key in f:
+            action, files = tuple(key.split("_", maxsplit=1))
+            if action not in d:
+                d[action] = []
+            d[action].append(files)
+        print(json.dumps(d, indent=2))
 
-cache.scan()
+        if 'ignore' in d:
+            exts = self._get_extensinons() or set()
+            for file in d['ignore']:
+                fnd = file.rfind('.')
+                if fnd != -1:
+                    ext = file[fnd+1:]
+                    exts.add(ext)
+            self._write_extensions(sorted(exts))
+
+        if 'moved' in d:
+            for files in d['moved']:
+                f1, f2 = tuple(files.split("*", maxsplit=1))
+                self.memory['old'][f2] = self.memory['old'].pop(f1)
+
+        if 'changed' in d:
+            for file in d['changed']:
+                self.memory['old'][file] = self.memory['new'].pop(file)
+
+        if 'delete' in d:
+            for file in d['delete']:
+                del(self.memory['old'][file])
+
+
+        print(json.dumps(self.memory, indent=2))
+        self.dump()
+        self.scan()
