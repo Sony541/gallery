@@ -16,7 +16,6 @@ class Cache(object):
             self.memory = {}
 
     def _write_extensions(self, ext):
-        print(ext)
         try:
             f = open('file_extensions.json', 'w+')
             f.write(json.dumps(sorted(ext)))
@@ -30,7 +29,6 @@ class Cache(object):
             f = open('file_extensions.json')
             ext = json.loads(f.read())
             f.close()
-            print("GOT EXTENSIONS")
             return set(ext)
         except Exception as e:
             print ('Error getting extens: %s' % e)
@@ -63,8 +61,8 @@ class Cache(object):
         for x in [x for x in list_of_files]:
             fnd = x.rfind('.')
             if fnd != -1:
-                e = x[fnd+1:].lower()
-                if e in ext:
+                e = x[fnd+1:].casefold()
+                if e in map(str.casefold, ext):
                     continue
             list_of_files.remove(x)
             ignore.append(x[len(LOCATION):])
@@ -139,7 +137,7 @@ class Cache(object):
 
 
     def dump(self, name=None):
-        db_update.write(self.memory['new'], name)
+        db_update.write(self.memory['old'], name)
 
 
     def len(self):
@@ -163,13 +161,8 @@ class Cache(object):
         return True
 
 
-    def resolve_problems(self, f):
-        d = {}
-        for key in f:
-            action, files = tuple(key.split("_", maxsplit=1))
-            if action not in d:
-                d[action] = []
-            d[action].append(files)
+    def resolve_problems(self, d):
+
         print(json.dumps(d, indent=2))
 
         if 'ignore' in d:
@@ -177,7 +170,7 @@ class Cache(object):
             for file in d['ignore']:
                 fnd = file.rfind('.')
                 if fnd != -1:
-                    ext = file[fnd+1:]
+                    ext = file[fnd+1:].lower()
                     exts.add(ext)
             self._write_extensions(sorted(exts))
 
@@ -194,7 +187,5 @@ class Cache(object):
             for file in d['delete']:
                 del(self.memory['old'][file])
 
-
-        print(json.dumps(self.memory, indent=2))
-        self.dump()
+        #self.dump()
         self.scan()

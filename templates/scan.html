@@ -1,32 +1,28 @@
 {% extends "with_search.html" %}
+{% set active_page = "scan" -%}
 
 {% block content %}
 
-  <h2> Успешно! </h2>
-  <div> <a href="#old"> В старом файле: <b>{{len.old}}</b> </a> </div>
-  <div> <a href="#new"> Найдено новых: <b>{{len.new}}</b></a> </div>
-  <div> <a href="#to_delete"> Утеряно старых: <b>{{len.to_delete}}</b></a> </div>
-  <div> <a href="#to_view"> Без тэгов (не новые): <b>{{len.to_view}}</b></a> </div>
-  
-  <div> <a name="new"> Найдено новых: </a> </div>
-  {% for photo in cache.new %}
-    <a href="{{  url_for('view', photo=photo) }}"> {{photo}} </a> <br>
-  {% endfor %}
-  
-  <div> <a name="to_delete"> Утеряно старых: </a> </div>
-  {% for photo in cache.to_delete %}
-    <a href="{{  url_for('view', photo=photo) }}"> {{photo}} </a> <br>
-  {% endfor %}
-  
-  <div> <a name="to_view"> Без тэгов (не новые): </a> </div>
-  {% for photo in cache.to_view %}
-    <a href="{{  url_for('view', photo=photo) }}"> {{photo}} </a> <br>
-  {% endfor %}
-  
-  <div> <a name="old"> В старом файле: </a> </div>
-  {% for photo in cache.old %}
-    <a href="{{  url_for('view', photo=photo) }}"> {{photo}} </a> <br>
-  {% endfor %}
-  
+  <div class="half-width-wrapper">
+    <div class="pads half-width">
+      <h3> Успешно! </h3>
+      <div> <a href="#old"> В старом файле: <b>{{len.old}}</b> </a> </div>
+      <div> <a href="#new"> Найдено новых: <b>{{len.new}}</b></a> </div>
+      <div> <a href="{{  url_for('problems') }}"> Конфликтов: <b>{{len.to_delete + len.moved + len.changed}}</b></a> </div>
+    </div>
+    <div class="pads half-width">
+      <div> <p id="new"> Найдено новых: </p> </div>
+      {% for photo in cache.new %}
+        <a href="{{  url_for('view', photo=photo) }}"> {{photo}} </a> <br>
+      {% endfor %}
+    </div>
+    <div class="pads half-width">
+      <div> <p id=old"> В старом файле: </p> </div>
+        {% for image in cache.old %}
+        {{ photo_name(image) }}
+        {% endfor %}
+    </div>
+  </div>
+
   
 {% endblock %}

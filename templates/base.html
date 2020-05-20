@@ -1,26 +1,49 @@
-<html>
-  <head>
-    <link href=".\static\style.css" rel="stylesheet">
-    {% if title %}
-    <title>{{ title }} - Галерея</title>
-    {% else %}
-    <title>Добро пожаловать в Галерею!</title>
-    {% endif %}
+{% set navigation_bar = [
+    ('index', 'Главная'),
+    ('scan', 'Просканировать'),
+    ('problems', 'Разрешение конфликтов')
+] -%}
+
+{% macro photo_name(name) -%}
+    <a class="photo" href="{{url_for('view', photo=name)}}"> {{ name }}</a> <br />
+{%- endmacro %}
+
+{% macro photo_image(name) -%}
+  <div class="view">
+    <a href = "{{url_for('photo', photo_id=name)}}"> <img class="view" src="{{url_for('photo', photo_id=name)}}" alt="{{name}}"/> </a>
+  </div>
+{%- endmacro %}
+
+{% set active_page = active_page|default('index') -%}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+        {% if title %}
+            <title>{{ title }} - Gallery</title>
+        {% else %}
+            <title>Добро пожаловать в галерею!</title>
+        {% endif %}
     </head>
     <body>
-      <table class="main">
-        <tr>
-          <td class="menu">
-            <div><a href="{{url_for('index')}}">Главная</a></div>
-            <div><a href="{{url_for('scan_page')}}">Просканировать</a></div>
-            <div><a href="{{url_for('tags')}}">Работа с тэгами</a></div>
-            <div><a href="{{url_for('problems')}}">Разрешение конфликтов</a></div>
-            <hr>
-          </td>
-          <td>
-            {% block content %}{% endblock %}
-          </td>
-        </tr>
-      </table>
+        <header>
+            Галерея
+        </header>
+        <ul id="navigation">
+            {% for id, caption in navigation_bar %}
+                <li>
+                    <a {% if id == active_page %} class="active"{% endif %} href="{{ url_for(id) }}">{{ caption|e }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+	    <div id="wrapper">
+            <section>
+                {% block content %}{% endblock %}
+            </section>
+        </div>
+        <footer>
+            (c) Sony 2020
+        </footer>
     </body>
 </html>

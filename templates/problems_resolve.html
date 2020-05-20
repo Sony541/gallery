@@ -1,8 +1,13 @@
 {% extends "with_search.html" %}
+{% set active_page = "problems" -%}
+
 
 {% block content %}
-
-  {% for x in form %}
-    {{ x }} <br>
-  {% endfor %}
+    <div class="half-width-wrapper">
+      <div class="pads half-width">
+        {% for x in form %}
+          {{ x }} - {{ form[x] }}<br>
+        {% endfor %}
+      </div>
+    </div>
 {% endblock %}

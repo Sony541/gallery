@@ -1,66 +1,83 @@
 {% extends "with_search.html" %}
+{% set active_page = "problems" -%}
 
 {% block content %}
 
+  <script language="JavaScript">
+  function toggle(source) {
+    checkboxes = document.getElementsByName(source.id);
+    for(var i=0, n=checkboxes.length;i<n;i++) {
+      checkboxes[i].checked = source.checked;
+    }
+  }
+  </script>
   <form id="probs" action="{{  url_for('problems_resolve') }}" method="POST">
-    <h3> Игнорируемые расширения</h3>
-    <p> Ниже перечислены файлы, которые полностью <b>игнорируются</b> системой. Если туда по ошибке попали Ваши видео или
-        фотографии - просто нажмите на галочку рядом с <b>одним</b> файлом с нужным расширением. Это расширение
-        добавится в файл <tt>file_extensions.json</tt>, отменить действие можно только поправив этот файл.</p>
-    {% if 'ignore' in cache %}
-      {% for key in cache['ignore'] %}
+    <div class="half-width-wrapper">
+      <div class="pads half-width">
+        <label class="toggle" for="ignore"> Выделить всё </label>
+        <input class="toggle" type="checkbox" id="ignore" onclick="toggle(this);">
+        <h3> Игнорируемые расширения</h3>
+        <p> Ниже перечислены файлы, которые полностью <b>игнорируются</b> системой. Если туда по ошибке попали Ваши видео или
+            фотографии - просто нажмите на галочку рядом с <b>одним</b> файлом с нужным расширением. Это расширение
+            добавится в файл <tt>file_extensions.json</tt>, отменить действие можно только поправив этот файл.</p>
+        {% if 'ignore' in cache %}
+          {% for key in cache['ignore'] %}
 
-        <input type="checkbox" id="ignore_{{ key }}" name="ignore_{{ key }}">
-        <label for="ignore_{{ key }}"> {{ key }} </label><br>
-      {% endfor %}
-    {% endif %}
-    <h3> Перемещённые файлы</h3>
-    <p> Ниже перечислены файлы, которые были <b>перенесены</b> Вами или еще кем-либо. Если вы видите здесь ВСЕ свои файлы -
-        попробуйте поменять основную директорию в файле <tt>config.py</tt>. Если вы переименовали или переместили целую
-        папку - не переживайте, просто оставьте галочки напротив всех файлов, система обновит все записи.</p>
-    {% if 'moved' in cache %}
-      {% for key in cache['moved'] %}
+            <input type="checkbox" id="ignore_{{ key }}" name="ignore" value="{{ key }}">
+            <label for="ignore_{{ key }}"> {{ key }} </label><br>
+          {% endfor %}
+        {% endif %}
+      </div>
+      <div class="pads half-width">
+        <label class="toggle" for="moved"> Выделить всё </label>
+        <input class="toggle" type="checkbox" id="moved" onclick="toggle(this);" checked>
+        <h3> Перемещённые файлы</h3>
+        <p> Ниже перечислены файлы, которые были <b>перенесены</b> Вами или еще кем-либо. Если вы видите здесь ВСЕ свои файлы -
+            попробуйте поменять основную директорию в файле <tt>config.py</tt>. Если вы переименовали или переместили целую
+            папку - не переживайте, просто оставьте галочки напротив всех файлов, система обновит все записи.</p>
+        {% if 'moved' in cache %}
+          {% for key in cache['moved'] %}
 
-        <input type="checkbox" id="moved_{{ key[0] }}*{{ key[1] }}" name="moved_{{ key[0] }}*{{ key[1] }}" checked>
-        <label for="moved_{{ key[0] }}*{{ key[1] }}"> {{ key[0] }} -> {{ key[1] }} </label><br>
-      {% endfor %}
-    {% endif %}
+            <input type="checkbox" id="moved_{{ key[0] }}*{{ key[1] }}" name="moved" value="{{ key[0] }}*{{ key[1] }}" checked>
+            <label for="moved_{{ key[0] }}*{{ key[1] }}"> {{ key[0] }} -> {{ key[1] }} </label><br>
+          {% endfor %}
+        {% endif %}
 
-    <h3> Изменённые файлы</h3>
-    <p> Ниже перечислены файлы, которые были <b>изменены</b>, например, если Вы их развернули. Однако, если поворотом
-      дело не ограничилось, а файлы были заменены абсолютно другими - Вам следует проверить соответствуют ли старые
-      тэги новым файам (для этого кликните на <tt>просмотр</tt>. Если Вы снимите галочки - система не обновит данные,
-      при следующем сканировании вновь напомнит об измениниях (если Вы их не "откатите")</p>
-    {% if 'changed' in cache %}
-      {% for key in cache['changed'] %}
-        <input type="checkbox" id="changed_{{ key }}" name="changed_{{ key }}" checked>
-        <label for="changed_{{ key }}"> {{ key }} </label>
-        <a target="_blank" href="{{  url_for('view', photo=key) }}"> (просмотр) </a><br>
-      {% endfor %}
-    {% endif %}
+      </div>
+      <div class="pads half-width">
+        <label class="toggle" for="changed"> Выделить всё </label>
+        <input class="toggle" type="checkbox" id="changed" onclick="toggle(this);" checked>
+        <h3> Изменённые файлы</h3>
+        <p> Ниже перечислены файлы, которые были <b>изменены</b>, например, если Вы их развернули. Однако, если поворотом
+          дело не ограничилось, а файлы были заменены абсолютно другими - Вам следует проверить соответствуют ли старые
+          тэги новым файам (для этого кликните на <tt>просмотр</tt>. Если Вы снимите галочки - система не обновит данные,
+          при следующем сканировании вновь напомнит об измениниях (если Вы их не "откатите")</p>
+        {% if 'changed' in cache %}
+          {% for key in cache['changed'] %}
+            <input type="checkbox" id="changed_{{ key }}" name="changed" value="{{ key }}" checked>
+            <label for="changed_{{ key }}"> {{ key }} </label>
+            <a target="_blank" href="{{  url_for('view', photo=key) }}"> (просмотр) </a><br>
+          {% endfor %}
+        {% endif %}
 
-    <h3> Удалённые файлы</h3>
-    <p> Ниже перечислены файлы, которые были <b>удалены</b>. Пожалуйста, будьте осторожны! Подтверждая удаление - вы
-        полностью стираете информацию об этих файлах.</p>
-    {% if 'to_delete' in cache %}
-      {% for key in cache['to_delete'] %}
-        <input type="checkbox" id="delete_{{ key }}" name="delete_{{ key }}">
-        <label for="delete_{{ key }}"> {{ key }} </label>
-      {% endfor %}
-    {% endif %}
+      </div>
+      <div class="pads half-width">
+        <label class="toggle" for="delete"> Выделить всё </label>
+        <input class="toggle" type="checkbox" id="delete" onclick="toggle(this);">
+        <h3> Удалённые файлы</h3>
+        <p> Ниже перечислены файлы, которые были <b>удалены</b>. Пожалуйста, будьте осторожны! Подтверждая удаление - вы
+            полностью стираете информацию об этих файлах.</p>
+        {% if 'to_delete' in cache %}
+          {% for key in cache['to_delete'] %}
+            <input type="checkbox" id="delete_{{ key }}" name="delete" value="{{ key }}">
+            <label for="delete_{{ key }}"> {{ key }} </label>
+          {% endfor %}
+        {% endif %}
+      </div>
+      <div class="pads half-width">
+        <input class="submit" type="submit" value="Разрешить конфликты">
+      </div>
+    </form>
+  </div>
 
-    <br>
-    <input type="submit" value="Разрешить конфликты">
-
-
-    {% for key in cache %}
-
-    <h2> {{ key }} </h2>
-      {% for key2 in cache[key] %}
-        <p>{{ key2 }}</p>
-
-      {% endfor %}
-    {% endfor %}
-
-  </form>
 {% endblock %}

@@ -1,45 +1,188 @@
 body {
-  font-family: Helvetica;
+    font-family: Helvetica;
+    background-color: #f1f1f1;
+    margin: 0;
+    font-size: 1vw;
+    line-height: 150%;
 }
+
+tt {
+    color: #df30aa;
+    border: 1px solid #df30aa;
+    padding: 2px;
+}
+
+pre {
+    color: #555555;
+    border: 1px dashed #555555;
+    padding: 10px;
+    margin: 10px;
+}
+
 a {
-  text-decoration: none;
+    text-decoration: none;
+    color: #0033FF;
 }
 
 a:hover {
   color: #FF3300;
 }
 
-table.main{
-  height: 100%;
-  width: 100%;
+label:hover {
+  color: #FF3300;
+  cursor: pointer;
 }
 
-table.main td{
-  vertical-align: top;
-}
-table.main td.menu{
-  width: 20%;
+header {
+    top: 0;
+    margin: 0;
+    font-size: 3.5vh;
+    height: 5vh;
+    width: 100%;
+    background: linear-gradient(90deg, rgba(100,100,250,1) 40%, rgba(222,50,144,1) 100%);
+    color: white;
+    text-align: right;
+    text-shadow: 2px 2px 4px #000000;
+    position: fixed;
+    z-index: 999;
 }
 
-div.view {
-  height: 100%;
-  position: relative;  
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 10vw;
+    background-color: #dddddd;
+    position: fixed;
+    height: 100%;
+    overflow: auto;
+    top: 5vh;
 }
 
-div.searchview { 
-  height: 200px;  
-  min-width: 200px;  
+li a {
+    display: block;
+    color: #000;
+    padding: 1vw;
+    text-decoration: none;
+}
+
+li a.active {
+    background: linear-gradient(45deg, rgba(100,100,250,1) 00%, rgba(222,50,144,1) 100%);
+    color: white;
+}
+
+li a:hover:not(.active) {
+    background-color: #555;
+    color: white;
+}
+
+#wrapper {
+    position: relative;
+    margin: 5vh 0.2vw 0.2vw 10.2vw;
+    padding-top: 0.4vw;
+}
+
+#wrapper div.pads{
+    vertical-align: top;
+    display: inline-block;
+    margin: 0.2vw;
+    padding: 0.5vw;
+    background-color: white;
+    border: 1px solid #cccccc;
+    position:sticky
+}
+#wrapper div.pads h3{
+    vertical-align: top;
+    margin: 0.2vw;
+    padding: 0.5vw;
+    text-align: left;
+
+}
+
+#wrapper div.pads input.toggle{
+    vertical-align: top;
+    display: inline-block;
+    position: absolute;
+    top: 0.5vw;
+    right: 0.5vw;
+}
+
+#wrapper div.pads label.toggle{
+    vertical-align: top;
+    display: inline-block;
+    position: absolute;
+    top: 0.7vw;
+    right: 2.2vw;
+}
+
+#wrapper div.pads input.submit{
+    width: 100%;
+    background-color: #ffffff;
+    border: 0px;
+    height: 10vh;
+    font-size: 2vw;
+    color: #df30aa;
+    border: 1px solid #df30aa;
+    cursor: pointer;
+}
+
+#wrapper div.pads input.submit:hover{
+    background: linear-gradient(90deg, rgba(100,100,250,1) 40%, rgba(222,50,144,1) 100%);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+
+#wrapper div.half-width-wrapper {
+    padding: 0px;
+    margin: 0px;
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    column-count: 2;
+    -webkit-column-gap: 0;
+    -moz-column-gap: 0;
+    column-gap: 0;
+}
+
+#wrapper div.half-width{
+    width: calc(44vw - 2px - 0.6vw);
+}
+#wrapper div.full-width{
+    width: 88vw;
+}
+
+#wrapper div.chart-container {
+  position: relative;
+  height: 35vh;
+}
+
+footer  {
+    width: 88vw;
+    text-align: center;
+    font-size: 2vh;
+    height: 6vh;
+    background-color: #f1f1f1;
+    vertical-align: bottom;
+    line-height: 6vh;
+    margin: 5vh 0.2vw 0.2vw 10.2vw;
+
+}
+
+
+div.searchview {
+  height: 200px;
+  min-width: 200px;
   display: inline-block;
 }
 
-img.searchview { 
-  height: 200px;  
+img.searchview {
+  height: 200px;
 }
 
 img.view {
-  max-width: 100%;
-  max-height: 100%;
-  position: absolute;
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 input.tag {
@@ -75,10 +218,6 @@ input.tag_button:hover {
 }
 
 
-
-
-
-
 .drag {
   width: 200px;
   height: 200px;
@@ -95,9 +234,4 @@ input.tag_button:hover {
   background: red;
   margin: 20px auto;
 }
-section {
-width: 415px;
-  height: 200px;
-  background:gray;
-  margin: 20px auto;
-}
+

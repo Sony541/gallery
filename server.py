@@ -1,5 +1,5 @@
 # coding=utf-8
-from flask import Flask, render_template, request, send_from_directory, send_file
+from flask import Flask, render_template, request, send_from_directory, send_file, redirect, url_for
 import os, json, zipfile, datetime, time, io
 from scanner import Cache
 from config import active_config
@@ -10,9 +10,10 @@ cache.scan()
 app = Flask(__name__)
 
 @app.route('/')
-@app.route('/index')
+@app.route('/index/')
 def index():
-    return render_template('index.html', title='Главная', cache=cache.memory, len=cache.len())
+    return render_template('index.html', title='Главная', cache=cache.memory,
+                           len=cache.len(), dir=active_config['location'])
 
 @app.route('/problems')
 def problems():
@@ -21,25 +22,31 @@ def problems():
 
 @app.route('/problems_resolve', methods=['POST'])
 def problems_resolve():
-    f = request.form
+    f = request.form.to_dict(flat=False)
     cache.resolve_problems(f)
     return render_template('problems_resolve.html', title='Разрешение конфликтов', cache=cache.memory, len=cache.len(), form=f)
 
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                          'favicon.ico',mimetype='image/vnd.microsoft.icon')
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-@app.route('/scan')
-def scan_page():
-    scan()
-    return render_template('scan.html', title='Сканирование каталога', cache=cache, len=cache.len())
+
+@app.route('/scan/')
+def scan():
+    cache.scan()
+    return render_template('scan.html', title='Сканирование каталога', cache=cache.memory, len=cache.len())
+
 
 @app.route('/view')
 def view():
     photo = request.args["photo"]
-    return render_template('view.html', title='Просмотр фото', photo=photo, cache=cache, len=cache.len())
+    return render_template('view.html', title='Просмотр фото', photo=photo, cache=cache.memory, len=cache.len())
+
+
+
+
+
 
 @app.route('/search', methods=['POST','GET'])
 def search():
@@ -50,7 +57,7 @@ def search():
             if search_tags(l, cache.old[ph]):
                 if not ph in cache.to_delete:
                     cache.search[ph] = cache.old[ph]
-    return render_template('search.html', title='Найденные фото', cache=cache, len=cache.len())
+    return render_template('search.html', title='Найденные фото', cache=cache.memory, len=cache.len())
 
 
 @app.route('/apply', methods=['POST'])
@@ -78,13 +85,13 @@ def next_page():
         lst = request.args["list"]
         if lst == "search":
             if cache.search:
-                return render_template('view.html', title='Просмотр фото', photo=next(iter(cache.search)), cache=cache, len=cache.len())
+                return render_template('view.html', title='Просмотр фото', photo=next(iter(cache.search)), cache=cache.memory, len=cache.len())
     if cache.new:
-        return render_template('view.html', title='Просмотр фото', photo=next(iter(cache.new)), cache=cache, len=cache.len())
+        return render_template('view.html', title='Просмотр фото', photo=next(iter(cache.new)), cache=cache.memory, len=cache.len())
 
 @app.route('/tags')
 def tags():
-    return render_template('tags.html', title='Тэги', cache=cache, len=cache.len())
+    return render_template('tags.html', title='Тэги', cache=cache.memory, len=cache.len())
 
 
 @app.route('/export')
@@ -102,7 +109,7 @@ def export():
 @app.route('/photo/<photo_id>')
 def photo(photo_id):
     print(photo_id)
-    return send_file("%s/%s" % (active_config['location'], photo_id))
+    return send_file("%s%s" % (active_config['location'], photo_id))
 
 @app.route('/arch')
 def arch():

@@ -14,28 +14,34 @@
     }
   } 
   </script>
-  <div class="view">
-    <a href = "{{url_for('photo', photo_id=photo)}}"> <img class="view" src="{{url_for('photo', photo_id=photo)}}" alt="{{photo}}"/> </a>
+
+  <div class="half-width-wrapper">
+    <div class="pads half-width">
+      {{ photo_image(photo) }}
+    </div>
+    <div class="pads half-width">
+
+      <form name="form_apply" id="form_apply" method="post" action="{{url_for('apply')}}">
+        <input class="tag_button" type="submit" value="Отправить!">
+        <div id="tags">
+          <input id="photo_id" name="photo_id" type="TEXT" value="{{ photo }}" hidden>
+          {% for tag, value in cache.tags|dictsort(false, 'value', reverse = True) %}
+
+          <input class="tag" id="{{ tag }}" type="checkbox" {% if (tag in cache.old[photo]) or (tag in cache.active_tags) %} checked {% endif %} name="{{ tag }}">
+          <label class="tag" for="{{ tag }}">{{ tag }} {{ cache.tags[tag] }}</label>
+          {% endfor %}
+        </div>
+        <hr>
+      </form>
+
+      <form name="form_add" id="form_add" method="get" action="about:blank">
+        <input id="input_tag" type="TEXT" name="tag">
+        <input type="submit" value="Добавить">
+      </form>
+    </div>
   </div>
 
-{% endblock %}
 
-{% block tagform %}
-  <form name="form_apply" id="form_apply" method="post" action="{{url_for('apply')}}">
-    <input class="tag_button" type="submit" value="Отправить!">
-    <div id="tags">
-      <input id="photo_id" name="photo_id" type="TEXT" value="{{ photo }}" hidden>
-      {% for tag, value in cache.tags|dictsort(false, 'value', reverse = True) %}
 
-      <input class="tag" id="{{ tag }}" type="checkbox" {% if (tag in cache.old[photo]) or (tag in cache.active_tags) %} checked {% endif %} name="{{ tag }}">
-      <label class="tag" for="{{ tag }}">{{ tag }} {{ cache.tags[tag] }}</label>
-      {% endfor %}
-    </div>
-    <hr>
-  </form>
 
-  <form name="form_add" id="form_add" method="get" action="about:blank">
-    <input id="input_tag" type="TEXT" name="tag">
-    <input type="submit" value="Добавить">
-  </form>
 {% endblock %}
