@@ -37,9 +37,12 @@ def scan():
     cache.scan()
     return render_template('scan.html', title='Сканирование каталога', cache=cache.memory, len=cache.len())
 
-@app.route('/photo/<photo_id>')
-def photo(photo_id):
-    return send_file("%s%s" % (active_config['location'], photo_id))
+@app.route('/photo')
+def photo():
+    photo_id = request.args.get('photo_id')
+    path = "%s%s" % (active_config['location'], photo_id)
+    print(path)
+    return send_file(path)
 
 
 @app.route('/view')
@@ -55,6 +58,7 @@ def view():
                 abort(404, "Нет фотографий для просмотра")
         else:
             abort(404, "Нет фотографий для просмотра")
+        return redirect(url_for('view', photo_id=photo_id, folder=folder))
 
     return render_template('view.html', title='Просмотр фото', photo=photo_id,
                            folder=folder, cache=cache.memory, len=cache.len())
