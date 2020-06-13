@@ -9,11 +9,13 @@ cache.scan()
 
 app = Flask(__name__)
 
+
 @app.route('/')
 @app.route('/index/')
 def index():
     return render_template('index.html', title='Главная', cache=cache.memory,
                            len=cache.len(), dir=active_config['location'])
+
 
 @app.route('/problems')
 def problems():
@@ -24,18 +26,21 @@ def problems():
 def problems_resolve():
     f = request.form.to_dict(flat=False)
     cache.resolve_problems(f)
-    return render_template('problems_resolve.html', title='Разрешение конфликтов', cache=cache.memory, len=cache.len(), form=f)
+    return render_template('problems_resolve.html', title='Разрешение конфликтов', cache=cache.memory, len=cache.len(),
+                           form=f)
 
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico',
+                               mimetype='image/vnd.microsoft.icon')
 
 
 @app.route('/scan/')
 def scan():
     cache.scan()
     return render_template('scan.html', title='Сканирование каталога', cache=cache.memory, len=cache.len())
+
 
 @app.route('/photo')
 def photo():
@@ -75,7 +80,7 @@ def apply():
                 cache.memory['old'][photo] = cache.memory['new'][photo]
         cache.memory['old'][photo]['tags'] = l
         if 'tags' not in cache.memory:
-            cache.memory['tags'] = {key : 1 for key in l}
+            cache.memory['tags'] = {key: 1 for key in l}
         else:
             for tag in l:
                 if tag in cache.memory['tags']:
@@ -115,15 +120,17 @@ def export():
     zf = zipfile.ZipFile(memory_file, 'w')
     for file in cache.search:
         print(file)
-        zf.write(file, arcname=file[file.rfind("\\")+1:])
+        zf.write(file, arcname=file[file.rfind("\\") + 1:])
     print(zf.filelist)
     zf.close()
     memory_file.seek(0)
-    return send_file(io.BytesIO(memory_file.read()), attachment_filename=str(datetime.datetime.now()) + ".zip", as_attachment=True)
+    return send_file(io.BytesIO(memory_file.read()), attachment_filename=str(datetime.datetime.now()) + ".zip",
+                     as_attachment=True)
 
 
 @app.route('/arch')
 def arch():
-    return send_file("D:\\Share\\Сканер.zip",  as_attachment=True)
+    return send_file("D:\\Share\\Сканер.zip", as_attachment=True)
+
 
 app.run(debug=True, host="0.0.0.0")
