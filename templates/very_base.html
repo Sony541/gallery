@@ -1,0 +1,28 @@
+{% macro photo_name(folder,photo_id) -%}
+    <a class="photo" href="{{url_for('view', photo_id=photo_id, folder=folder)}}"> {{ photo_id }}</a> <br />
+{%- endmacro %}
+
+{% macro photo_image(name) -%}
+  <div class="view">
+    <img id="photo" class="view" src="{{url_for('photo', photo_id=name)}}" alt="{{name}}"/> 
+  </div>
+{%- endmacro %}
+
+{% set active_page = active_page|default('index') -%}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        {% block style %}
+            <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+        {% endblock %}
+        {% if title %}
+            <title>{{ title }} - Gallery</title>
+        {% else %}
+            <title>Добро пожаловать в галерею!</title>
+        {% endif %}
+    </head>
+    <body>
+        {% block base %}{% endblock %}
+    </body>
+</html>

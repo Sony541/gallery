@@ -1,4 +1,4 @@
-{% extends "with_search.html" %}
+{% extends "base.html" %}
 {% set active_page = "scan" -%}
 
 {% block content %}
@@ -8,18 +8,19 @@
       <h3> Успешно! </h3>
       <div> <a href="#old"> В старом файле: <b>{{len.old}}</b> </a> </div>
       <div> <a href="#new"> Найдено новых: <b>{{len.new}}</b></a> </div>
-      <div> <a href="{{  url_for('problems') }}"> Конфликтов: <b>{{len.to_delete + len.moved + len.changed}}</b></a> </div>
+      <div> <a href="{{  url_for('problems') }}"> Конфликтов:
+        <b> {{confs}}</b></a> </div>
     </div>
     <div class="pads half-width">
       <div> <p id="new"> Найдено новых: </p> </div>
-      {% for photo in cache.new %}
-        <a href="{{  url_for('view', photo=photo) }}"> {{photo}} </a> <br>
-      {% endfor %}
+        {% for photo_id in cache.new %}
+        {{ photo_name(photo_id=photo_id, folder='new') }}
+        {% endfor %}
     </div>
     <div class="pads half-width">
-      <div> <p id=old"> В старом файле: </p> </div>
-        {% for image in cache.old %}
-        {{ photo_name(image) }}
+      <div> <p id="old"> В старом файле: </p> </div>
+        {% for photo_id in cache.old %}
+        {{ photo_name(photo_id=photo_id, folder='old') }}
         {% endfor %}
     </div>
   </div>

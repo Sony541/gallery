@@ -4,8 +4,8 @@ import json
 
 def get_old():
     try:
-        f = open(active_config['data_file'], 'r')
-        ret = json.loads(f.read())
+        f = open(active_config['data_file'], 'rb')
+        ret = json.loads(f.read().decode('utf8'))
         f.close()
         return ret
     except:
@@ -25,6 +25,6 @@ def _write_one(ob, name):
 
 
 def _write_all(ob):
-    f = open(active_config['data_file'], 'w')
-    f.write(json.dumps(ob, ensure_ascii=False, indent=2))
+    f = open(active_config['data_file'], 'wb')
+    f.write(json.dumps(ob, ensure_ascii=False, indent=2).encode('utf8'))
     f.close()

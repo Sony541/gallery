@@ -34,7 +34,6 @@ class Cache(object):
             print ('Error getting extens: %s' % e)
             return None
 
-
     def _read_json(self):
         js = db_update.get_old()
         if js:
@@ -43,7 +42,6 @@ class Cache(object):
         else:
             return False
 
-
     def _get_file_meta(self, fname):
         stat = os.stat(fname)
         return {
@@ -51,7 +49,6 @@ class Cache(object):
             'st_mtime': str(stat.st_mtime),
             'tags': []
         }
-
 
     def _find_files_on_disk(self):
         ext = self._get_extensinons() or set()
@@ -76,24 +73,26 @@ class Cache(object):
                 meta = self._get_file_meta(name)
                 self.memory['new'][id] = meta
 
-
     def _find_tags(self):
         self.memory["tags"] = {}
         for key in self.memory["old"]:
             if self.memory["old"][key]:
-                for tag in self.memory["old"][key]:
-                    if tag in self.memory["tags"]:
-                        self.memory["tags"][tag] += 1
-                    else:
-                        self.memory["tags"][tag] = 1
-
+                if 'tags' in self.memory["old"][key]:
+                    if self.memory["old"][key]['tags']:
+                        for tag in self.memory["old"][key]['tags']:
+                            if tag in self.memory["tags"]:
+                                self.memory["tags"][tag] += 1
+                            else:
+                                self.memory["tags"][tag] = 1
 
     def _find_files_in_db(self):
         old = db_update.get_old()
         if old:
-            self.memory['old'] = old
+            self.memory['old'] = old;
             return True
-
+        else:
+            self.memory['old'] = {}
+            return False
 
     def _find_changed_moved_to_delete(self):
         if 'old' in self.memory and 'new' in self.memory:
@@ -104,11 +103,11 @@ class Cache(object):
             added = new - old
             checked = new & old
 
-            moved = []
+            moved = {}
             for name in [x for x in lost]:
                 dup = self._find_same_meta_in_new(name)
                 if dup:
-                    moved.append((name, dup))
+                    moved[name] = dup
                     lost.remove(name)
             if moved:
                 self.memory['moved'] = moved
@@ -123,17 +122,30 @@ class Cache(object):
                     del self.memory['new'][name]
             if changed:
                 self.memory['changed'] = changed
+            
+            to_view = []
+            for name in added:
+                if name not in moved and name not in changed:
+                    to_view.append(name)
+            if to_view:
+                self.memory['to_view'] = sorted(to_view)
 
 
     def _same_meta(self, ob1, ob2):
-        return ob1['st_size'] == ob2['st_size'] and ob1['st_mtime'] == ob2['st_mtime']
+        if 'st_size' in ob1 and 'st_size' in ob2 and 'st_mtime' in ob1 and 'st_mtime' in ob2:
+            return ob1['st_size'] == ob2['st_size'] and ob1['st_mtime'] == ob2['st_mtime']
+
 
 
     def _find_same_meta_in_new(self, fname):
-        st_size, st_mtime = self.memory['old'][fname]['st_size'], self.memory['old'][fname]['st_mtime']
-        for name in self.memory['new']:
-            if st_size == self.memory['new'][name]['st_size'] and st_mtime == self.memory['new'][name]['st_mtime']:
-                return name
+        try:
+            st_size, st_mtime = self.memory['old'][fname]['st_size'], self.memory['old'][fname]['st_mtime']
+        except:
+            return None
+        else:
+            for name in self.memory['new']:
+                if st_size == self.memory['new'][name]['st_size'] and st_mtime == self.memory['new'][name]['st_mtime']:
+                    return name
 
 
     def dump(self, name=None):
@@ -151,7 +163,11 @@ class Cache(object):
         self._find_files_on_disk()
         if self._find_files_in_db():
             self._find_changed_moved_to_delete()
-        print (json.dumps(self.memory, indent=2))
+            self._find_tags()
+        else:
+            if 'new' in self.memory:
+                if self.memory['new']:
+                    self.memory['to_view'] = list(self.memory['new'].keys())
 
 
     def search_tags(self, pattern, tag_list):
@@ -162,9 +178,6 @@ class Cache(object):
 
 
     def resolve_problems(self, d):
-
-        print(json.dumps(d, indent=2))
-
         if 'ignore' in d:
             exts = self._get_extensinons() or set()
             for file in d['ignore']:
@@ -187,5 +200,5 @@ class Cache(object):
             for file in d['delete']:
                 del(self.memory['old'][file])
 
-        #self.dump()
+        self.dump()
         self.scan()

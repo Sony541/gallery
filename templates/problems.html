@@ -38,8 +38,8 @@
         {% if 'moved' in cache %}
           {% for key in cache['moved'] %}
 
-            <input type="checkbox" id="moved_{{ key[0] }}*{{ key[1] }}" name="moved" value="{{ key[0] }}*{{ key[1] }}" checked>
-            <label for="moved_{{ key[0] }}*{{ key[1] }}"> {{ key[0] }} -> {{ key[1] }} </label><br>
+            <input type="checkbox" id="moved_{{ key }}*{{ cache['moved'][key] }}" name="moved" value="{{ key }}*{{ cache['moved'][key] }}" checked>
+            <label for="moved_{{ key }}*{{ cache['moved'][key] }}"> {{ key }} -> {{ cache['moved'][key] }} </label><br>
           {% endfor %}
         {% endif %}
 
@@ -55,7 +55,7 @@
         {% if 'changed' in cache %}
           {% for key in cache['changed'] %}
             <input type="checkbox" id="changed_{{ key }}" name="changed" value="{{ key }}" checked>
-            <label for="changed_{{ key }}"> {{ key }} </label>
+            <label for="changed_{{ key }}"> {{ key }} </label><br>
             <a target="_blank" href="{{  url_for('view', photo=key) }}"> (просмотр) </a><br>
           {% endfor %}
         {% endif %}
@@ -70,7 +70,7 @@
         {% if 'to_delete' in cache %}
           {% for key in cache['to_delete'] %}
             <input type="checkbox" id="delete_{{ key }}" name="delete" value="{{ key }}">
-            <label for="delete_{{ key }}"> {{ key }} </label>
+            <label for="delete_{{ key }}"> {{ key }} </label><br>
           {% endfor %}
         {% endif %}
       </div>

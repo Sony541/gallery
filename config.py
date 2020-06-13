@@ -9,4 +9,4 @@ prod = {
     "data_file": "data.json"
 }
 
-active_config = test
+active_config = prod

@@ -1,49 +1,32 @@
+{% extends "very_base.html" %}
+
+{% set confs = (len.to_delete|default(0) + len.moved|default(0) + len.changed|default(0))|string %}
+{% set views = len.to_view|default(0)|string %}
+
 {% set navigation_bar = [
     ('index', 'Главная'),
     ('scan', 'Просканировать'),
-    ('problems', 'Разрешение конфликтов')
+    ('view', 'Отметить фото: ' + views),
+    ('problems', 'Разрешение конфликтов: ' + confs)
 ] -%}
 
-{% macro photo_name(name) -%}
-    <a class="photo" href="{{url_for('view', photo=name)}}"> {{ name }}</a> <br />
-{%- endmacro %}
-
-{% macro photo_image(name) -%}
-  <div class="view">
-    <a href = "{{url_for('photo', photo_id=name)}}"> <img class="view" src="{{url_for('photo', photo_id=name)}}" alt="{{name}}"/> </a>
-  </div>
-{%- endmacro %}
-
-{% set active_page = active_page|default('index') -%}
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
-        {% if title %}
-            <title>{{ title }} - Gallery</title>
-        {% else %}
-            <title>Добро пожаловать в галерею!</title>
-        {% endif %}
-    </head>
-    <body>
-        <header>
-            Галерея
-        </header>
-        <ul id="navigation">
-            {% for id, caption in navigation_bar %}
-                <li>
-                    <a {% if id == active_page %} class="active"{% endif %} href="{{ url_for(id) }}">{{ caption|e }}</a>
-                </li>
-            {% endfor %}
-        </ul>
-	    <div id="wrapper">
-            <section>
-                {% block content %}{% endblock %}
-            </section>
-        </div>
-        <footer>
-            (c) Sony 2020
-        </footer>
-    </body>
-</html>
+{% block base %}
+    <header>
+        Галерея
+    </header>
+    <ul id="navigation">
+        {% for id, caption in navigation_bar %}
+            <li>
+                <a {% if id == active_page %} class="active"{% endif %} href="{{ url_for(id) }}">{{ caption|e }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div id="wrapper">
+        <section>
+            {% block content %}{% endblock %}
+        </section>
+    </div>
+    <footer>
+        (c) Sony 2020
+    </footer>
+{% endblock %}

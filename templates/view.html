@@ -1,45 +1,58 @@
-{% extends "base.html" %}
+{% extends "very_base.html" %}
 
-{% block content %}
-  <script>
-  window.onload = function () {
-    document.getElementById("form_add").onsubmit = function onSubmit(form) {
-      var inp = document.getElementById("input_tag");
-      var txt = inp.value;
-      var div_tags = document.getElementById("tags");
-      div_tags.innerHTML += '<input class="tag" id="' + txt + '" type="checkbox" name="' + txt + '" checked>'
-      div_tags.innerHTML += '<label class="tag" for="' + txt + '">' + txt + '</label>'
-      inp.value = "";
-      return false;
+{% block style %}
+    <link href="{{ url_for('static', filename='view.css') }}" rel="stylesheet">
+{% endblock %}
+{% set active_page = active_page|default('view') -%}
+{% block base %}
+    <script>
+    window.onload = function () {
+        var form = document.getElementById("form_add");
+
+        form.onsubmit = function onSubmit(form) {
+            var inp = document.getElementById("input_tag");
+            var txt = inp.value;
+            var div_tags = document.getElementById("tags");
+            div_tags.innerHTML += '<input class="tag" id="' + txt + '" type="checkbox" name="' + txt + '" checked>'
+            div_tags.innerHTML += '<label class="tag" for="' + txt + '">' + txt + '</label>'
+            inp.value = "";
+            return false;
+        }
+
+        var menu = document.getElementById("menu");
+        var ph = document.getElementById("photo");
+        ph.onclick = function () {
+            var style = window.getComputedStyle(menu),
+            op = style.getPropertyValue('opacity');
+
+            if(op != 0) menu.style.opacity = 0;
+            else menu.style.opacity = 0.7;
+        }
+
     }
-  } 
-  </script>
 
-  <div class="half-width-wrapper">
-    <div class="pads half-width">
-      {{ photo_image(photo) }}
+    </script>
+    {{ photo_image(photo) }}
+
+    <div id="menu" class="transp_menu">
+        <form name="form_add" id="form_add" method="get" action="about:blank">
+            <input id="input_tag" type="TEXT" name="tag">
+            <input type="submit" value="Добавить">
+        </form>
+        <form name="form_apply" id="form_apply" method="post" action="{{url_for('apply')}}">
+            <div id="tags">
+                <input id="photo_id" name="photo_id" type="TEXT" value="{{ photo }}" hidden>
+                {% if cache.tags is defined %}
+                    {% for tag, value in cache.tags|dictsort(false, 'value', reverse = True) %}
+                    <input class="tag" id="{{ tag }}" type="checkbox" {% if ((photo in cache.old) and (tag in cache.old[photo].tags)) or (tag in cache.active_tags) %} checked {% endif %} name="{{ tag }}">
+                    <label class="tag" for="{{ tag }}">{{ tag }} {{ cache.tags[tag] }}</label>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <hr>
+            <input class="tag_button" type="submit" value="Отправить!">
+        </form>
     </div>
-    <div class="pads half-width">
-
-      <form name="form_apply" id="form_apply" method="post" action="{{url_for('apply')}}">
-        <input class="tag_button" type="submit" value="Отправить!">
-        <div id="tags">
-          <input id="photo_id" name="photo_id" type="TEXT" value="{{ photo }}" hidden>
-          {% for tag, value in cache.tags|dictsort(false, 'value', reverse = True) %}
-
-          <input class="tag" id="{{ tag }}" type="checkbox" {% if (tag in cache.old[photo]) or (tag in cache.active_tags) %} checked {% endif %} name="{{ tag }}">
-          <label class="tag" for="{{ tag }}">{{ tag }} {{ cache.tags[tag] }}</label>
-          {% endfor %}
-        </div>
-        <hr>
-      </form>
-
-      <form name="form_add" id="form_add" method="get" action="about:blank">
-        <input id="input_tag" type="TEXT" name="tag">
-        <input type="submit" value="Добавить">
-      </form>
-    </div>
-  </div>
 
 
 

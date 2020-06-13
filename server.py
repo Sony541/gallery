@@ -1,5 +1,5 @@
 # coding=utf-8
-from flask import Flask, render_template, request, send_from_directory, send_file, redirect, url_for
+from flask import Flask, render_template, request, send_from_directory, send_file, redirect, url_for, abort
 import os, json, zipfile, datetime, time, io
 from scanner import Cache
 from config import active_config
@@ -37,18 +37,58 @@ def scan():
     cache.scan()
     return render_template('scan.html', title='Сканирование каталога', cache=cache.memory, len=cache.len())
 
+@app.route('/photo/<photo_id>')
+def photo(photo_id):
+    return send_file("%s%s" % (active_config['location'], photo_id))
+
 
 @app.route('/view')
 def view():
-    photo = request.args["photo"]
-    return render_template('view.html', title='Просмотр фото', photo=photo, cache=cache.memory, len=cache.len())
+    folder = request.args.get('folder')
+    photo_id = request.args.get('photo_id')
+    if not (folder and photo_id):
+        folder = "to_view"
+        if folder in cache.memory:
+            if cache.memory[folder]:
+                photo_id = cache.memory[folder][0]
+            else:
+                abort(404, "Нет фотографий для просмотра")
+        else:
+            abort(404, "Нет фотографий для просмотра")
+
+    return render_template('view.html', title='Просмотр фото', photo=photo_id,
+                           folder=folder, cache=cache.memory, len=cache.len())
 
 
+@app.route('/apply', methods=['POST'])
+def apply():
+    photo = request.form["photo_id"]
+    l = [key for key in request.form if key != 'photo_id']
+    cache.active_tags = l
+    if l:
+        if 'new' in cache.memory:
+            if photo in cache.memory['new']:
+                cache.memory['old'][photo] = cache.memory['new'][photo]
+        cache.memory['old'][photo]['tags'] = l
+        if 'tags' not in cache.memory:
+            cache.memory['tags'] = {key : 1 for key in l}
+        else:
+            for tag in l:
+                if tag in cache.memory['tags']:
+                    cache.memory['tags'][tag] += 1
+                else:
+                    cache.memory['tags'][tag] = 1
+        cache.dump()
+        if 'to_view' in cache.memory:
+            if photo in cache.memory['to_view']:
+                cache.memory['to_view'].remove(photo)
+        if 'new' in cache.memory:
+            if photo in cache.memory['new']:
+                del cache.memory['new'][photo]
+    return redirect(url_for('view'))
 
 
-
-
-@app.route('/search', methods=['POST','GET'])
+@app.route('/search', methods=['POST', 'GET'])
 def search():
     if request.method == 'POST':
         cache.search = {}
@@ -59,35 +99,6 @@ def search():
                     cache.search[ph] = cache.old[ph]
     return render_template('search.html', title='Найденные фото', cache=cache.memory, len=cache.len())
 
-
-@app.route('/apply', methods=['POST'])
-def apply():
-    photo = request.form["photo_id"]
-    l = [key for key in request.form if key != 'photo_id']
-    cache.active_tags = l
-    if l:
-        cache.old[photo] = l
-        for tag in l:
-            if tag in cache.tags:
-                cache.tags[tag] += 1
-            else:
-                cache.tags[tag] = 1
-        cache.dump()
-        if photo in cache.to_view:
-            del cache.to_view[photo]
-        if photo in cache.new:
-            del cache.new[photo]
-    return next_page()
-
-@app.route('/next')
-def next_page():
-    if "list" in request.args:
-        lst = request.args["list"]
-        if lst == "search":
-            if cache.search:
-                return render_template('view.html', title='Просмотр фото', photo=next(iter(cache.search)), cache=cache.memory, len=cache.len())
-    if cache.new:
-        return render_template('view.html', title='Просмотр фото', photo=next(iter(cache.new)), cache=cache.memory, len=cache.len())
 
 @app.route('/tags')
 def tags():
@@ -106,10 +117,6 @@ def export():
     memory_file.seek(0)
     return send_file(io.BytesIO(memory_file.read()), attachment_filename=str(datetime.datetime.now()) + ".zip", as_attachment=True)
 
-@app.route('/photo/<photo_id>')
-def photo(photo_id):
-    print(photo_id)
-    return send_file("%s%s" % (active_config['location'], photo_id))
 
 @app.route('/arch')
 def arch():
