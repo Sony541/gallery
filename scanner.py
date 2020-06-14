@@ -21,7 +21,7 @@ class Cache(object):
             f.write(json.dumps(sorted(ext)))
             f.close()
         except Exception as e:
-            print ('Error writing extens: %s' % e)
+            print('Error writing extens: %s' % e)
             return None
 
     def _get_extensinons(self):
@@ -31,7 +31,7 @@ class Cache(object):
             f.close()
             return set(ext)
         except Exception as e:
-            print ('Error getting extens: %s' % e)
+            print('Error getting extens: %s' % e)
             return None
 
     def _read_json(self):
@@ -58,7 +58,7 @@ class Cache(object):
         for x in [x for x in list_of_files]:
             fnd = x.rfind('.')
             if fnd != -1:
-                e = x[fnd+1:].casefold()
+                e = x[fnd + 1:].casefold()
                 if e in map(str.casefold, ext):
                     continue
             list_of_files.remove(x)
@@ -122,7 +122,7 @@ class Cache(object):
                     del self.memory['new'][name]
             if changed:
                 self.memory['changed'] = changed
-            
+
             to_view = []
             for name in added:
                 if name not in moved and name not in changed:
@@ -130,11 +130,9 @@ class Cache(object):
             if to_view:
                 self.memory['to_view'] = sorted(to_view)
 
-
     def _same_meta(self, ob1, ob2):
         if 'st_size' in ob1 and 'st_size' in ob2 and 'st_mtime' in ob1 and 'st_mtime' in ob2:
             return ob1['st_size'] == ob2['st_size'] and ob1['st_mtime'] == ob2['st_mtime']
-
 
 
     def _find_same_meta_in_new(self, fname):
@@ -147,10 +145,8 @@ class Cache(object):
                 if st_size == self.memory['new'][name]['st_size'] and st_mtime == self.memory['new'][name]['st_mtime']:
                     return name
 
-
     def dump(self, name=None):
         db_update.write(self.memory['old'], name)
-
 
     def len(self):
         r = {}
@@ -168,7 +164,7 @@ class Cache(object):
             if 'new' in self.memory:
                 if self.memory['new']:
                     self.memory['to_view'] = list(self.memory['new'].keys())
-
+        db_update.cache_dump(self.memory)
 
     def search_tags(self, pattern, tag_list):
         for tag in pattern:
@@ -176,14 +172,13 @@ class Cache(object):
                 return False
         return True
 
-
     def resolve_problems(self, d):
         if 'ignore' in d:
             exts = self._get_extensinons() or set()
             for file in d['ignore']:
                 fnd = file.rfind('.')
                 if fnd != -1:
-                    ext = file[fnd+1:].lower()
+                    ext = file[fnd + 1:].lower()
                     exts.add(ext)
             self._write_extensions(sorted(exts))
 
@@ -198,7 +193,29 @@ class Cache(object):
 
         if 'delete' in d:
             for file in d['delete']:
-                del(self.memory['old'][file])
+                del (self.memory['old'][file])
 
         self.dump()
         self.scan()
+
+    def _find_all_dups(self, folder, st_size, st_mtime):
+        ret = []
+        for ph in folder:
+            if (st_size, st_mtime) == (folder[ph]['st_size'], folder[ph]['st_mtime']):
+                ret.append(ph)
+        return ret
+
+    def find_dups(self):
+        whole = dict(self.memory['old'], **self.memory['new'])
+        dups = {}
+        while whole:
+            name, value = whole.popitem()
+            st_size, st_mtime = value['st_size'], value['st_mtime']
+            if (st_size, st_mtime) not in dups:
+                found_dups = self._find_all_dups(whole, st_size, st_mtime)
+                if found_dups:
+                    found_dups.append(name)
+                    dups[st_size, st_mtime] = found_dups
+        self.memory['dups'] = dups
+
+

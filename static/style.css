@@ -180,3 +180,21 @@ div.search
 img.searchview {
     height: 200px;
 }
+
+div.dups_group {
+    display: block;
+    padding: 1vh 1vw;
+    margin: 1vh 1vw;
+}
+
+p.dups_one {
+    padding: 0vh 0vw;
+    margin: 0vh 0vw;
+}
+
+img.mini {
+    width: 3vw;
+    min-height: 2vh;
+    max-width: 20vw;
+    max-height: 20vh;
+}

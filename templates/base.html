@@ -1,16 +1,21 @@
 {% extends "very_base.html" %}
 
-{% set confs = (len.to_delete|default(0) + len.moved|default(0) + len.changed|default(0))|string %}
+{% set confs = len.to_delete|default(0) + len.moved|default(0) + len.changed|default(0) %}
 {% set views = len.to_view|default(0)|string %}
 
 {% set navigation_bar = [
     ('index', 'Главная'),
     ('scan', 'Просканировать'),
     ('view', 'Отметить фото: ' + views),
-    ('problems', 'Разрешение конфликтов: ' + confs)
+    ('problems', 'Разрешение конфликтов: ' + confs|string)
 ] -%}
 
+
 {% block base %}
+    {% if confs == 0 %}
+        {{ navigation_bar.append(('dups', 'Поиск дубликатов')) }}
+    {% endif %}
+
     <header>
         Галерея
     </header>

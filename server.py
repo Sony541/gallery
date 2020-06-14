@@ -30,6 +30,12 @@ def problems_resolve():
                            form=f)
 
 
+@app.route('/dups')
+def dups():
+    cache.find_dups()
+    return render_template('dups.html', title='Поиск дубликатов', cache=cache.memory, len=cache.len())
+
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico',

@@ -1,0 +1,26 @@
+{% extends "with_search.html" %}
+{% set active_page = "dups" -%}
+
+
+{% macro photo_mini(name) -%}
+    <p class="dups_one">
+        <img id="photo" class="mini" src="{{url_for('photo', photo_id=name)}}" alt="{{name}}"/> {{ name }}
+    </p>
+{%- endmacro %}
+
+{% block content %}
+    <div class="pads full-width">
+        <h3> Поиск дубликатов </h3>
+        <p> Ниже перечислены фотографии, у которых на диске есть аналоги. Эта функция помогает Вам загружать все свои
+            в папку, не боясь, что вы загрузите какие-то несколько раз.</p>
+        {{cache.dups}}
+        {% for group in cache.dups %}
+            <div class="dups_group">
+                {% for photo in cache.dups[group] %}
+                    {{ photo_mini(photo) }}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}

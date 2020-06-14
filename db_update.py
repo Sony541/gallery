@@ -13,6 +13,11 @@ def get_old():
         return False
 
 
+def cache_dump(cache):
+    with open("cache_dump.json", 'wb') as f:
+        f.write(json.dumps(cache, ensure_ascii=False, indent=2).encode('utf8'))
+
+
 def write(ob, name):
     if name:
         return _write_one(ob, name)
