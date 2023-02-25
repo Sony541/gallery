@@ -3,6 +3,8 @@ import os, json
 import db_update
 
 from config import active_config
+from file_extensions import Extensions
+from storage import Storage
 
 LOCATION = os.path.expanduser(active_config['location'])
 
@@ -14,25 +16,6 @@ class Cache(object):
     def _clear(self):
         if self.memory:
             self.memory = {}
-
-    def _write_extensions(self, ext):
-        try:
-            f = open('file_extensions.json', 'w+')
-            f.write(json.dumps(sorted(ext)))
-            f.close()
-        except Exception as e:
-            print('Error writing extens: %s' % e)
-            return None
-
-    def _get_extensinons(self):
-        try:
-            f = open('file_extensions.json')
-            ext = json.loads(f.read())
-            f.close()
-            return set(ext)
-        except Exception as e:
-            print('Error getting extens: %s' % e)
-            return None
 
     def _read_json(self):
         js = db_update.get_old()
@@ -51,7 +34,7 @@ class Cache(object):
         }
 
     def _find_files_on_disk(self):
-        ext = self._get_extensinons() or set()
+        ext = Extensions.get_extensinons()
         wlk = os.walk(LOCATION)
         list_of_files = [os.path.join(dp, f) for dp, dn, fn in wlk for f in fn]
         ignore = []
@@ -88,7 +71,7 @@ class Cache(object):
     def _find_files_in_db(self):
         old = db_update.get_old()
         if old:
-            self.memory['old'] = old;
+            self.memory['old'] = old
             return True
         else:
             self.memory['old'] = {}
@@ -146,7 +129,7 @@ class Cache(object):
                     return name
 
     def dump(self, name=None):
-        db_update.write(self.memory['old'], name)
+        db_update.write(self.memory['old'])
 
     def len(self):
         r = {}
@@ -174,13 +157,13 @@ class Cache(object):
 
     def resolve_problems(self, d):
         if 'ignore' in d:
-            exts = self._get_extensinons() or set()
+            exts = Extensions.get_extensinons()
             for file in d['ignore']:
                 fnd = file.rfind('.')
                 if fnd != -1:
                     ext = file[fnd + 1:].lower()
                     exts.add(ext)
-            self._write_extensions(sorted(exts))
+            Extensions.write_extensinons(sorted(exts))
 
         if 'moved' in d:
             for files in d['moved']:
@@ -219,3 +202,5 @@ class Cache(object):
         self.memory['dups'] = dups
 
 
+    def md5_check(self):
+        pass

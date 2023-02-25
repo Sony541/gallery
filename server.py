@@ -36,6 +36,12 @@ def dups():
     return render_template('dups.html', title='Поиск дубликатов', cache=cache.memory, len=cache.len())
 
 
+@app.route('/md5_check')
+def md5_check():
+    cache.md5_check()
+    return render_template('md5_check.html', title='Контрольная сумма', cache=cache.memory, len=cache.len())
+
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico',

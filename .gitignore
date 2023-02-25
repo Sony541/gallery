@@ -7,3 +7,4 @@ test_storage*
 test_data*
 .DS_Store
 cache_dump.json
+data

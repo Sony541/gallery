@@ -1,0 +1,25 @@
+{% extends "with_search.html" %}
+{% set active_page = "dups" -%}
+
+
+{% macro photo_mini(name) -%}
+    <p class="dups_one">
+        <img id="photo" class="mini" src="{{url_for('photo', photo_id=name)}}" alt="{{name}}"/> {{ name }}
+    </p>
+{%- endmacro %}
+
+{% block content %}
+    <div class="pads full-width">
+        <h3> Проверка контрольной суммы </h3>
+        <p> Посчитав хэш сумму для каждой фотографии мы сможем понять изменилась ли фотография (потеря данных), а также - есть ли у нее дубликаты.</p>
+        {{cache.dups}}
+        {% for group in cache.dups %}
+            <div class="dups_group">
+                {% for photo in cache.dups[group] %}
+                    {{ photo_mini(photo) }}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
