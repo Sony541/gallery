@@ -1,11 +1,10 @@
-from config import active_config as cfg
-from helpers import get_file_extension, read_json_file, write_json_file
+from config import Config as cfg
+from helpers import  read_json_file, write_json_file
 import json
-import os
 
 
 class Extensions:
-    PATH = os.path.join(cfg["data_folder"], "file_extensions.json")
+    PATH = cfg.EXTENSIONS_FILE
 
     @classmethod
     def get_extensinons(cls):
@@ -23,7 +22,6 @@ class Extensions:
             return set()
     
     @classmethod
-    def find(cls, path):
+    def find(cls, ext):
         cls.get_extensinons()
-        ext = get_file_extension(path)
         return ext.lower() in cls.CACHE

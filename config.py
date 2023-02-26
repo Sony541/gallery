@@ -5,6 +5,7 @@ class Config:
     LOCATION = "D:\\Treasury\\Media\\Photos\\2008"
     DATA_FOLDER = "data"
     DATA_FILE = join(DATA_FOLDER, "data.json")
+    EXTENSIONS_FILE = join(DATA_FOLDER, "file_extensions.json")
     CACHE_FILE = join(DATA_FOLDER, "cache.json")
     FILENAME_DICT = join(DATA_FOLDER, "FILENAME_DICT.json")
     MD5_DICT = join(DATA_FOLDER, "MD5_DICT.json")

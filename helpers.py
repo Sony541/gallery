@@ -2,11 +2,6 @@ import os
 import json
 
 
-def get_file_extension(path):
-    _, ext = os.path.splitext(path)
-    return ext
-
-
 def decide_folder_ignore(path):
     return path.endswith("_ignore")
 

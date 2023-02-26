@@ -16,9 +16,9 @@ class Storage():
     UNSUPPORTED: set[MediaFile] = field(default_factory=set)
 
     def _flush(self):
-        self.FILELIST = set()
-        self.IGNORED = set()
-        self.UNSUPPORTED = set()
+        self.FILELIST = {}
+        self.IGNORED = {}
+        self.UNSUPPORTED = {}
 
     def read_filenames_from_disk(self):
         self._flush()
@@ -27,14 +27,16 @@ class Storage():
             ignore = decide_folder_ignore(dp)
             for f in fn:
                 fullname = os.path.join(dp, f)
+                new_file = MediaFile(fullname)
                 if ignore:
-                    self.IGNORED.add(MediaFile(fullname))
+                    self.IGNORED[fullname] = new_file
                 else:
-                    supported = Extensions.find(fullname)
+                    supported = Extensions.find(new_file.get_extension())
                     if supported:
-                        self.FILELIST.add(MediaFile(fullname))
+                        new_file.get_file_meta()
+                        self.FILELIST[fullname] = new_file
                     else:
-                        self.UNSUPPORTED.add(MediaFile(fullname))
+                        self.UNSUPPORTED[fullname] = new_file
 
     def toJSON(self):
         return jsonpickle.encode(s, unpicklable=False, indent=4)

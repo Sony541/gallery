@@ -1,6 +1,6 @@
 from config import Config as cfg
 import json
-from helpers import get_file_extension, read_json_file, write_json_file
+from helpers import read_json_file, write_json_file
 
 
 def read():
