@@ -1,8 +1,7 @@
 # coding=utf-8
 from flask import Flask, render_template, request, send_from_directory, send_file, redirect, url_for, abort
 import os, json, zipfile, datetime, time, io
-from scanner import Cache
-from config import active_config
+from cache import Cache
 from config import Config as cfg
 
 cache = Cache()
@@ -13,21 +12,43 @@ app = Flask(__name__)
 @app.route('/')
 @app.route('/index/')
 def index():
-    return render_template('index.html', title='Главная', cache=cache.memory,
-                           len=cache.len(), dir=cfg.DATA_FILE)
+    return render_template(
+        'index.html',
+        title='Главная',
+        cache=cache,
+        dir=cfg.DATA_FILE,
+    )
+
+
+@app.route('/scan/')
+def scan():
+    cache.scan()
+    return render_template(
+        'scan.html',
+        title='Сканирование каталога',
+        cache=cache,
+    )
 
 
 @app.route('/problems')
 def problems():
-    return render_template('problems.html', title='Разрешение конфликтов', cache=cache.memory, len=cache.len())
+    return render_template(
+        'problems.html', 
+        title='Разрешение конфликтов', 
+        cache=cache,
+    )
 
 
 @app.route('/problems_resolve', methods=['POST'])
 def problems_resolve():
     f = request.form.to_dict(flat=False)
     cache.resolve_problems(f)
-    return render_template('problems_resolve.html', title='Разрешение конфликтов', cache=cache.memory, len=cache.len(),
-                           form=f)
+    return render_template(
+        'problems_resolve.html',
+        title='Разрешение конфликтов',
+        cache=cache,
+        form=f,
+    )
 
 
 @app.route('/dups')
@@ -46,12 +67,6 @@ def md5_check():
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico',
                                mimetype='image/vnd.microsoft.icon')
-
-
-@app.route('/scan/')
-def scan():
-    cache.scan()
-    return render_template('scan.html', title='Сканирование каталога', cache=cache.memory, len=cache.len())
 
 
 @app.route('/photo')

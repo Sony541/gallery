@@ -11,6 +11,7 @@ LOCATION = os.path.expanduser(active_config['location'])
 
 
 class Cache(object):
+    OLD:
     def __init__(self):
         self.memory = {}
 

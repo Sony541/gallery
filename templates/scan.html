@@ -6,20 +6,20 @@
   <div class="half-width-wrapper">
     <div class="pads half-width">
       <h3> Успешно! </h3>
-      <div> <a href="#old"> В старом файле: <b>{{len.old}}</b> </a> </div>
-      <div> <a href="#new"> Найдено новых: <b>{{len.new}}</b></a> </div>
+      <div> <a href="#old"> В старом файле: <b>{{cache.OLD|length}}</b> </a> </div>
+      <div> <a href="#new"> Найдено новых: <b>{{cache.NEW|length}}</b></a> </div>
       <div> <a href="{{  url_for('problems') }}"> Конфликтов:
         <b> {{confs}}</b></a> </div>
     </div>
     <div class="pads half-width">
       <div> <p id="new"> Найдено новых: </p> </div>
-        {% for photo_id in cache.new %}
+        {% for photo_id in cache.NEW %}
         {{ photo_name(photo_id=photo_id, folder='new') }}
         {% endfor %}
     </div>
     <div class="pads half-width">
       <div> <p id="old"> В старом файле: </p> </div>
-        {% for photo_id in cache.old %}
+        {% for photo_id in cache.OLD %}
         {{ photo_name(photo_id=photo_id, folder='old') }}
         {% endfor %}
     </div>

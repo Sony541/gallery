@@ -20,8 +20,8 @@
         <p> Ниже перечислены файлы, которые полностью <b>игнорируются</b> системой. Если туда по ошибке попали Ваши видео или
             фотографии - просто нажмите на галочку рядом с <b>одним</b> файлом с нужным расширением. Это расширение
             добавится в файл <tt>file_extensions.json</tt>, отменить действие можно только поправив этот файл.</p>
-        {% if 'ignore' in cache %}
-          {% for key in cache['ignore'] %}
+        {% if cache.UNSUPPORTED %}
+          {% for key in cache.UNSUPPORTED %}
 
             <input type="checkbox" id="ignore_{{ key }}" name="ignore" value="{{ key }}">
             <label for="ignore_{{ key }}"> {{ key }} </label><br>
@@ -35,11 +35,11 @@
         <p> Ниже перечислены файлы, которые были <b>перенесены</b> Вами или еще кем-либо. Если вы видите здесь ВСЕ свои файлы -
             попробуйте поменять основную директорию в файле <tt>config.py</tt>. Если вы переименовали или переместили целую
             папку - не переживайте, просто оставьте галочки напротив всех файлов, система обновит все записи.</p>
-        {% if 'moved' in cache %}
-          {% for key in cache['moved'] %}
+        {% if cache.MOVED %}
+          {% for key in cache.MOVED %}
 
-            <input type="checkbox" id="moved_{{ key }}*{{ cache['moved'][key] }}" name="moved" value="{{ key }}*{{ cache['moved'][key] }}" checked>
-            <label for="moved_{{ key }}*{{ cache['moved'][key] }}"> {{ key }} -> {{ cache['moved'][key] }} </label><br>
+            <input type="checkbox" id="moved_{{ key }}*{{ cache.MOVED[key] }}" name="moved" value="{{ key }}*{{ cache.MOVED[key] }}" checked>
+            <label for="moved_{{ key }}*{{ cache.MOVED[key] }}"> {{ key }} -> {{ cache.MOVED[key] }} </label><br>
           {% endfor %}
         {% endif %}
 
@@ -52,8 +52,8 @@
           дело не ограничилось, а файлы были заменены абсолютно другими - Вам следует проверить соответствуют ли старые
           тэги новым файам (для этого кликните на <tt>просмотр</tt>. Если Вы снимите галочки - система не обновит данные,
           при следующем сканировании вновь напомнит об измениниях (если Вы их не "откатите")</p>
-        {% if 'changed' in cache %}
-          {% for key in cache['changed'] %}
+        {% if cache.CHANGED %}
+          {% for key in cache.CHANGED %}
             <input type="checkbox" id="changed_{{ key }}" name="changed" value="{{ key }}" checked>
             <label for="changed_{{ key }}"> {{ key }} </label><br>
             <a target="_blank" href="{{  url_for('view', photo=key) }}"> (просмотр) </a><br>
@@ -67,8 +67,8 @@
         <h3> Удалённые файлы</h3>
         <p> Ниже перечислены файлы, которые были <b>удалены</b>. Пожалуйста, будьте осторожны! Подтверждая удаление - вы
             полностью стираете информацию об этих файлах.</p>
-        {% if 'to_delete' in cache %}
-          {% for key in cache['to_delete'] %}
+        {% if cache.TO_DELETE %}
+          {% for key in cache.TO_DELETE %}
             <input type="checkbox" id="delete_{{ key }}" name="delete" value="{{ key }}">
             <label for="delete_{{ key }}"> {{ key }} </label><br>
           {% endfor %}

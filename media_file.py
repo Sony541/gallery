@@ -8,6 +8,7 @@ class MediaFile:
     md5: str = field(default=None)
     size: int = field(default=None)
     mtime: int = field(default=None)
+    tags: list[str] = field(default_factory=list, compare=False)
 
     def get_extension(self):
         _, ext = os.path.splitext(self.name)
@@ -22,3 +23,6 @@ class MediaFile:
             'size': self.size,
             'mtime': self.mtime
         }
+
+    def compare_meta(self, other):
+        return self.size == other.size and self.mtime == other.mtime

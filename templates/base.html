@@ -1,12 +1,12 @@
 {% extends "very_base.html" %}
 
-{% set confs = len.to_delete|default(0) + len.moved|default(0) + len.changed|default(0) %}
-{% set views = len.to_view|default(0)|string %}
+{% set confs = cache.TO_DELETE|length|default(0) + cache.MOVED|length|default(0) + cache.CHANGED|length|default(0) %}
+{% set views = cache.NEW|length|default(0)|string %}
 
 {% set navigation_bar = [
     ('index', 'Главная'),
     ('scan', 'Просканировать'),
-    ('view', 'Отметить фото: ' + views),
+    ('view', 'Отметить фото: ' + view|string),
     ('problems', 'Разрешение конфликтов: ' + confs|string),
     ('md5_check', 'Контрольная сумма ')
 ] -%}
