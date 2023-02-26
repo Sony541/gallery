@@ -3,6 +3,7 @@ import os, json
 import db_update
 
 from config import active_config
+from config import Config as cfg
 from file_extensions import Extensions
 from storage import Storage
 
@@ -18,19 +19,14 @@ class Cache(object):
             self.memory = {}
 
     def _read_json(self):
-        js = db_update.get_old()
-        if js:
-            self.memory['old'] = js
-            return True
-        else:
-            return False
+        self.memory['old'] = db_update.read()
+        return self.memory['old']
 
     def _get_file_meta(self, fname):
         stat = os.stat(fname)
         return {
             'st_size': stat.st_size,
-            'st_mtime': str(stat.st_mtime),
-            'tags': []
+            'st_mtime': int(stat.st_mtime)
         }
 
     def _find_files_on_disk(self):
@@ -69,13 +65,10 @@ class Cache(object):
                                 self.memory["tags"][tag] = 1
 
     def _find_files_in_db(self):
-        old = db_update.get_old()
-        if old:
-            self.memory['old'] = old
+        self.memory['old'] = db_update.read()
+        if self.memory['old']:
             return True
-        else:
-            self.memory['old'] = {}
-            return False
+        return False
 
     def _find_changed_moved_to_delete(self):
         if 'old' in self.memory and 'new' in self.memory:
@@ -113,7 +106,8 @@ class Cache(object):
             if to_view:
                 self.memory['to_view'] = sorted(to_view)
 
-    def _same_meta(self, ob1, ob2):
+    @staticmethod
+    def _same_meta(ob1, ob2):
         if 'st_size' in ob1 and 'st_size' in ob2 and 'st_mtime' in ob1 and 'st_mtime' in ob2:
             return ob1['st_size'] == ob2['st_size'] and ob1['st_mtime'] == ob2['st_mtime']
 

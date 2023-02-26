@@ -3,9 +3,9 @@ from flask import Flask, render_template, request, send_from_directory, send_fil
 import os, json, zipfile, datetime, time, io
 from scanner import Cache
 from config import active_config
+from config import Config as cfg
 
 cache = Cache()
-cache.scan()
 
 app = Flask(__name__)
 
@@ -14,7 +14,7 @@ app = Flask(__name__)
 @app.route('/index/')
 def index():
     return render_template('index.html', title='Главная', cache=cache.memory,
-                           len=cache.len(), dir=active_config['location'])
+                           len=cache.len(), dir=cfg.DATA_FILE)
 
 
 @app.route('/problems')
@@ -57,7 +57,7 @@ def scan():
 @app.route('/photo')
 def photo():
     photo_id = request.args.get('photo_id')
-    path = "%s%s" % (active_config['location'], photo_id)
+    path = f"{cfg.DATA_FILE}, {photo_id}"
     print(path)
     return send_file(path)
 

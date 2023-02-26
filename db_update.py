@@ -3,7 +3,7 @@ import json
 from helpers import get_file_extension, read_json_file, write_json_file
 
 
-def get_old():
+def read():
     return read_json_file(cfg.DATA_FILE)
 
 def write(ob):

@@ -23,6 +23,7 @@ class Extensions:
             return set()
     
     @classmethod
-    def test(cls, path):
+    def find(cls, path):
+        cls.get_extensinons()
         ext = get_file_extension(path)
         return ext.lower() in cls.CACHE

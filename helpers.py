@@ -3,7 +3,7 @@ import json
 
 
 def get_file_extension(path):
-    _, ext = os.path.splittext(path)
+    _, ext = os.path.splitext(path)
     return ext
 
 

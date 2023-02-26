@@ -2,34 +2,39 @@ from config import active_config as cfg
 import os
 from file_extensions import Extensions
 from helpers import decide_folder_ignore
+from dataclasses import dataclass, asdict, field
+from media_file import MediaFile
+import json
+import jsonpickle
 
 
+@dataclass
+class Storage():
+    PATH: str = cfg["location"]
+    FILELIST: set[MediaFile] = field(default_factory=set)
+    IGNORED: set[MediaFile] = field(default_factory=set)
+    UNSUPPORTED: set[MediaFile] = field(default_factory=set)
 
-class Storage:
-    PATH = cfg["location"]
+    def _flush(self):
+        self.FILELIST = set()
+        self.IGNORED = set()
+        self.UNSUPPORTED = set()
 
-    @classmethod
-    def _flush(cls):
-        cls.FILELIST = set()
-        cls.IGNORED = set()
-        cls.UNSUPPORTED = set()
-
-    @classmethod
-    def read_filenames_from_disk(cls):
-        cls._flush()
-        wlk = os.walk()
+    def read_filenames_from_disk(self):
+        self._flush()
+        wlk = os.walk(self.PATH)
         for dp, dn, fn in wlk:
             ignore = decide_folder_ignore(dp)
             for f in fn:
                 fullname = os.path.join(dp, f)
                 if ignore:
-                    cls.IGNORED.add(fullname)
+                    self.IGNORED.add(MediaFile(fullname))
                 else:
                     supported = Extensions.find(fullname)
                     if supported:
-                        cls.FILELIST.add(fullname)
+                        self.FILELIST.add(MediaFile(fullname))
                     else:
-                        cls.UNSUPPORTED.add(fullname)
-    
+                        self.UNSUPPORTED.add(MediaFile(fullname))
 
-
+    def toJSON(self):
+        return jsonpickle.encode(s, unpicklable=False, indent=4)
